@@ -32,6 +32,10 @@ record; gitignore it to keep it private.
 
 That's the whole setup — the skill and the hook registration ship with the plugin.
 
+**Requirements:** the surprise hook needs `python3` (any 3.x, stdlib only) on PATH —
+near-universal on Linux/macOS. On native Windows without Git Bash the ambush won't
+fire; `/pop-quiz` itself works everywhere regardless.
+
 **Updates:** the plugin is versioned by git commit SHA, so every push to this repo is
 a new version. `/plugin marketplace update` pulls the latest; marketplaces with
 auto-update enabled refresh on startup.

@@ -6,26 +6,46 @@ suddenly swivels around and asks you one question about it. Whatever you answer,
 response teaches you one notch above the level your answer revealed: know nothing and
 you get the basics; know a bit and you get pushed deeper.
 
-Two pieces, zero infrastructure — it runs inside the Claude Code session you're
-already in:
+It's a Claude Code plugin with two pieces and zero infrastructure — it runs inside
+the session you're already in:
 
-- **`skill/SKILL.md`** — the `/pop-quiz` skill. It picks one topic from three angles
+- **`skills/pop-quiz/`** — the `/pop-quiz` skill. Picks one topic from three angles
   (your recent commits, your architecture, or a concept underneath your code), asks
-  one open question, grades by teaching, and appends a row to `.pop-quiz.md` in the
-  project so future quizzes escalate known topics and revisit weak ones.
-- **`hooks/pop-quiz-stop.sh`** — a Stop hook that puts the *pop* back in pop quiz:
-  when Claude finishes a task, roughly 1 time in 5 (at most once per 30 minutes,
-  only inside git repos) it ambushes you with a quiz before the session rests.
+  one open question, grades by teaching — citing your real code, and official
+  reference docs for concepts — then shows you the level it recorded.
+- **`hooks/`** — a Stop hook that puts the *pop* back in pop quiz: when Claude
+  finishes a task, roughly 1 time in 5 (at most once per 30 minutes, only inside
+  git repos) it ambushes you with a quiz before the session rests.
+
+Your progress lives in `.pop-quiz.md` at the root of each quizzed project — a plain
+markdown table the skill creates, appends to, shows you after every round, and
+compacts when it grows long. Future quizzes read it to escalate topics you know and
+revisit ones you don't. Delete it to reset; commit it to version your learning
+record; gitignore it to keep it private.
 
 ## Install
 
-Link the skill into your personal skills directory:
-
-```sh
-ln -sfn ~/projects/pop-quiz/skill ~/.claude/skills/pop-quiz
+```
+/plugin marketplace add emoporemilio/pop-quiz
+/plugin install pop-quiz@pop-quiz
 ```
 
-Register the hook in `~/.claude/settings.json`:
+That's the whole setup — the skill and the hook registration ship with the plugin.
+
+**Updates:** the plugin is versioned by git commit SHA, so every push to this repo is
+a new version. `/plugin marketplace update` pulls the latest; marketplaces with
+auto-update enabled refresh on startup.
+
+## Developing / running from a checkout
+
+A symlink install reads straight from the working tree (skill body and hook script
+are read per use, so edits take effect immediately, no reinstall):
+
+```sh
+ln -sfn "$(pwd)/skills/pop-quiz" ~/.claude/skills/pop-quiz
+```
+
+and register the hook in `~/.claude/settings.json`:
 
 ```json
 {
@@ -33,7 +53,7 @@ Register the hook in `~/.claude/settings.json`:
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "~/projects/pop-quiz/hooks/pop-quiz-stop.sh" }
+          { "type": "command", "command": "/absolute/path/to/pop-quiz/hooks/pop-quiz-stop.py" }
         ]
       }
     ]
@@ -41,7 +61,7 @@ Register the hook in `~/.claude/settings.json`:
 }
 ```
 
-## Tuning
+## Tuning the ambush
 
 The hook reads three environment variables:
 
@@ -51,6 +71,4 @@ The hook reads three environment variables:
 | `POP_QUIZ_COOLDOWN` | `1800` | minimum seconds between ambushes |
 | `POP_QUIZ_OFF` | unset | set to anything to disable the ambush (manual `/pop-quiz` still works) |
 
-The per-project ledger lives at `.pop-quiz.md` in each repo's root — plain markdown,
-readable and editable by hand. Delete it to reset your history; commit it if you want
-your learning record versioned.
+The cooldown clock is the mtime of `~/.cache/pop-quiz-last` — the hook's only state.

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/pop-quiz-stop.py",
+            "timeout": 10,
+            "statusMessage": "Rolling the pop-quiz dice…"
+          }
+        ]
+      }
+    ]
+  }
+}

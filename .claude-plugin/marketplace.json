@@ -1,0 +1,17 @@
+{
+  "name": "pop-quiz",
+  "owner": {
+    "name": "Emilio Franceschini",
+    "email": "franceschini.emilio@gmail.com"
+  },
+  "metadata": {
+    "description": "Pop quizzes about the project you're building with an LLM — learn what your codebase knows that you don't."
+  },
+  "plugins": [
+    {
+      "name": "pop-quiz",
+      "source": "./",
+      "description": "One unexpected question about your project; a response that teaches at your level; a ledger that remembers."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "pop-quiz",
+  "description": "Pop-quizzes you on the project you're building with an LLM: one unexpected question about your recent work, architecture, or the concepts under your code, a response that teaches one notch above your answer, and a per-project ledger that escalates over time. Includes a Stop hook that occasionally ambushes you, like a real tech lead.",
+  "author": {
+    "name": "Emilio Franceschini",
+    "email": "franceschini.emilio@gmail.com"
+  }
+}

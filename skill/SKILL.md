@@ -72,6 +72,18 @@ Example row:
 
 Don't discuss the ledger beyond a one-line acknowledgment.
 
+### Ledger compaction
+
+If the table has grown past ~40 rows, compact it before appending: collapse everything but the most recent ~15 rows into a `## Consolidated history` section with one line per topic:
+
+```markdown
+## Consolidated history
+| topic | angle | level | last asked | remaining gap |
+|-------|-------|-------|------------|---------------|
+```
+
+Merge duplicate topics into their latest level and the one gap that still matters. Compaction summarizes, it never forgets: no topic's existence or level may be lost. Both the table and the consolidated section count as the ledger for topic selection in step 2.
+
 ## Rules
 
 - One question per invocation. Resist follow-up chains.

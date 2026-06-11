@@ -70,7 +70,13 @@ Example row:
 | 2026-06-11 | recent | retry logic in sync worker | 1 | knew retries existed, missed the backoff cap |
 ```
 
-Don't discuss the ledger beyond a one-line acknowledgment.
+Close by showing the user the exact row you recorded, in one line:
+
+```
+Logged: <angle> · <topic> · level <n> (<label>) — <note>
+```
+
+The user must always see their assessed level and the gap that was written down — that line is part of the feedback, not bookkeeping. Don't editorialize beyond it.
 
 ### Ledger compaction
 

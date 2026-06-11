@@ -50,7 +50,7 @@ Then respond ONE notch above their level — that is the entire pedagogy:
 - **2** → confirm, then add the edge case they missed or the "why" behind the design choice.
 - **3** → confirm in a sentence and leave them one harder thought to chew on — no second graded round.
 
-Keep it short: a few sentences to one short paragraph. Never a lecture. Always cite real code (`path/to/file.ts:42`), never generalities.
+Keep it short: a few sentences to one short paragraph. Never a lecture. Always cite real code (`path/to/file.ts:42`), never generalities. When the topic is a technical concept, also cite the official reference documentation — one link to the canonical source (MDN, the RFC, the language spec, the framework's own docs), never a blog post or Stack Overflow. If unsure of the exact URL, verify it rather than guessing.
 
 ## 5. Update the ledger
 

@@ -1,55 +1,59 @@
 # pop-quiz
 
-You build with an LLM, and the LLM ends up knowing your project better than you do —
-the architecture, the stack, the features, the details. pop-quiz is the tech lead who
-suddenly swivels around and asks you one question about it. Whatever you answer, the
-response teaches you one notch above the level your answer revealed: know nothing and
-you get the basics; know a bit and you get pushed deeper.
+When you build with an LLM, the LLM ends up knowing your project better than you
+do. I kept noticing I couldn't explain my own architecture, the stack I was
+standing on, half the features I'd shipped. In real life the thing that fixes
+this is a tech lead or a professor who puts you on the spot: one question you
+didn't expect, and answering it (well or badly) is how you actually learn.
 
-It's a Claude Code plugin with two pieces and zero infrastructure — it runs inside
-the session you're already in:
+pop-quiz is that, inside Claude Code. One question about your own project, then a
+reply that teaches one notch above whatever your answer revealed. If you knew
+nothing, you get the basics. If you almost had it, you get the piece you were
+missing, pointed at the actual file and line.
 
-- **`skills/pop-quiz/`** — the `/pop-quiz` skill. Picks one topic from three angles
-  (your recent commits, your architecture, or a concept underneath your code), asks
-  one open question, grades by teaching — citing your real code, and official
-  reference docs for concepts — then shows you the level it recorded.
-- **`hooks/`** — a Stop hook that puts the *pop* back in pop quiz: when Claude
-  finishes a task, roughly 1 time in 5 (at most once per 30 minutes, only inside
-  git repos) it ambushes you with a quiz before the session rests.
+## How it works
 
-Your progress lives in `.pop-quiz.md` at the root of each quizzed project — a plain
-markdown table the skill creates, appends to, shows you after every round, and
-compacts when it grows long. Future quizzes read it to escalate topics you know and
-revisit ones you don't. Delete it to reset; commit it to version your learning
-record; gitignore it to keep it private.
+Two pieces, no infrastructure:
+
+- The `/pop-quiz` skill picks one topic (your recent commits, the architecture,
+  or a concept underneath the code), asks one open question, and grades by
+  teaching. Concepts come with a link to the official reference docs, not
+  someone's blog.
+- A Stop hook provides the surprise. Roughly 1 in 5 times Claude finishes a
+  task, at most once every 30 minutes and only inside git repos, you get
+  ambushed.
+
+Your record is a markdown table in `.pop-quiz.md` at the root of whatever
+project you got quizzed in. The skill creates it, shows you every row it writes,
+and compacts it when it grows long. Later quizzes read it to escalate the topics
+you know and come back to the ones you don't. Delete it to start over; commit or
+gitignore it as you like.
 
 ## Install
 
 ```
-/plugin marketplace add emoporemilio/pop-quiz
+/plugin marketplace add EmoPorEmilio/pop-quiz
 /plugin install pop-quiz@pop-quiz
 ```
 
-That's the whole setup — the skill and the hook registration ship with the plugin.
+The surprise hook needs `python3` on PATH (any 3.x, stdlib only). On native
+Windows without Git Bash the ambush won't fire; `/pop-quiz` itself works
+everywhere.
 
-**Requirements:** the surprise hook needs `python3` (any 3.x, stdlib only) on PATH —
-near-universal on Linux/macOS. On native Windows without Git Bash the ambush won't
-fire; `/pop-quiz` itself works everywhere regardless.
+There are no versioned releases. The plugin is versioned by commit SHA, so every
+push here is a new version: `/plugin marketplace update pop-quiz` pulls the
+latest, and with auto-update on it refreshes at startup.
 
-**Updates:** the plugin is versioned by git commit SHA, so every push to this repo is
-a new version. `/plugin marketplace update` pulls the latest; marketplaces with
-auto-update enabled refresh on startup.
+## Running from a checkout
 
-## Developing / running from a checkout
-
-A symlink install reads straight from the working tree (skill body and hook script
-are read per use, so edits take effect immediately, no reinstall):
+A symlink install reads straight from the working tree, so edits to the skill or
+the hook take effect immediately:
 
 ```sh
 ln -sfn "$(pwd)/skills/pop-quiz" ~/.claude/skills/pop-quiz
 ```
 
-and register the hook in `~/.claude/settings.json`:
+Then register the hook in `~/.claude/settings.json`:
 
 ```json
 {
@@ -57,7 +61,7 @@ and register the hook in `~/.claude/settings.json`:
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "/absolute/path/to/pop-quiz/hooks/pop-quiz-stop.py" }
+          { "type": "command", "command": "python3 /absolute/path/to/pop-quiz/hooks/pop-quiz-stop.py" }
         ]
       }
     ]
@@ -73,6 +77,7 @@ The hook reads three environment variables:
 |----------|---------|--------|
 | `POP_QUIZ_ODDS` | `5` | fires 1 in N times Claude stops |
 | `POP_QUIZ_COOLDOWN` | `1800` | minimum seconds between ambushes |
-| `POP_QUIZ_OFF` | unset | set to anything to disable the ambush (manual `/pop-quiz` still works) |
+| `POP_QUIZ_OFF` | unset | disables the ambush; `/pop-quiz` still works |
 
-The cooldown clock is the mtime of `~/.cache/pop-quiz-last` — the hook's only state.
+The hook's only state is the mtime of `~/.cache/pop-quiz-last`, which is the
+cooldown clock.

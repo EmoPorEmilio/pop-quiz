@@ -2,9 +2,10 @@
 """Stop hook: once in a while, ambush the user with a pop quiz about the project.
 
 Tuning via environment:
-  POP_QUIZ_ODDS      fire 1 in N stops (default 5)
-  POP_QUIZ_COOLDOWN  minimum seconds between quizzes (default 1800)
-  POP_QUIZ_OFF       set to anything to disable the ambush
+  POP_QUIZ_ODDS       fire 1 in N stops (default 5)
+  POP_QUIZ_COOLDOWN   minimum seconds between quizzes (default 1800)
+  POP_QUIZ_MIN_EDITS  only ambush sessions with at least N file edits (default 3)
+  POP_QUIZ_OFF        set to anything to disable the ambush
 """
 
 import json
@@ -16,7 +17,10 @@ import time
 
 ODDS = int(os.environ.get("POP_QUIZ_ODDS", 5))
 COOLDOWN = int(os.environ.get("POP_QUIZ_COOLDOWN", 1800))
+MIN_EDITS = int(os.environ.get("POP_QUIZ_MIN_EDITS", 3))
 STAMP = os.path.expanduser("~/.cache/pop-quiz-last")
+
+EDIT_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 
 REASON = (
     "Pop-quiz hook fired — a ritual the user set up on purpose. Use the Skill "
@@ -42,6 +46,40 @@ def cooled_down() -> bool:
         return True
 
 
+def wrote_code(transcript_path) -> bool:
+    """A session that edited no files has nothing fresh to quiz on.
+
+    If the transcript is missing or unreadable, fall back to the old
+    always-eligible behavior rather than silently killing the ambush.
+    """
+    if not transcript_path:
+        return True
+    edits = 0
+    try:
+        with open(transcript_path) as transcript:
+            for line in transcript:
+                try:
+                    entry = json.loads(line)
+                except ValueError:
+                    continue
+                message = entry.get("message")
+                content = message.get("content") if isinstance(message, dict) else None
+                if not isinstance(content, list):
+                    continue
+                for block in content:
+                    if (
+                        isinstance(block, dict)
+                        and block.get("type") == "tool_use"
+                        and block.get("name") in EDIT_TOOLS
+                    ):
+                        edits += 1
+                        if edits >= MIN_EDITS:
+                            return True
+    except OSError:
+        return True
+    return False
+
+
 def should_fire(event: dict) -> bool:
     return (
         not event.get("stop_hook_active")  # we caused this stop; never re-fire
@@ -49,6 +87,7 @@ def should_fire(event: dict) -> bool:
         and in_git_repo()
         and cooled_down()
         and random.randrange(ODDS) == 0
+        and wrote_code(event.get("transcript_path"))  # last: it reads a file
     )
 
 

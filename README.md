@@ -25,8 +25,9 @@ I tried to write the skill as simple as possible:
   or a concept underneath the code), asks one open question, and grades by
   teaching. Ideally gets you links for your reading homework.
 - A Stop hook provides the surprise. Roughly 1 in 5 times Claude finishes a
-  task, at most once every 30 minutes and only inside git repos, you get
-  ambushed.
+  task, at most once every 30 minutes, only inside git repos, and only in
+  sessions that actually edited files, you get ambushed — usually about the
+  thing that was just built, while it's still fresh enough to lose.
 
 Your record is a markdown table in `.pop-quiz.md` at the root of whatever
 project you got quizzed in. 
@@ -58,6 +59,7 @@ The hook reads three environment variables:
 |----------|---------|--------|
 | `POP_QUIZ_ODDS` | `5` | fires 1 in N times Claude stops |
 | `POP_QUIZ_COOLDOWN` | `1800` | minimum seconds between ambushes |
+| `POP_QUIZ_MIN_EDITS` | `3` | only ambush sessions with at least N file edits |
 | `POP_QUIZ_OFF` | unset | disables the ambush; `/pop-quiz` still works |
 
 The hook's only state is the mtime of `~/.cache/pop-quiz-last`, which is the

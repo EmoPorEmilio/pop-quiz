@@ -17,19 +17,29 @@ If the user passed arguments naming a topic or area, quiz on that and skip step 
 
 ## 2. Pick ONE topic
 
+If the surprise hook fired (rather than the user typing /pop-quiz), the best topic is usually sitting in this very session: code Claude just wrote that the user never read, a tradeoff that got decided three messages ago. That knowledge is at its most fragile right now — quiz it before it evaporates. If a weak ledger topic connects to what was just built, even better: re-ask it through the new code. Fall back to the angles below only when the session built nothing worth asking about.
+
 Three angles — rotate across invocations (the ledger shows which angle went last):
 
 - **recent** — something the LLM built lately that the user may never have read. The best default; it targets exactly what slipped past them.
 - **architecture** — how the pieces fit: data flow, boundaries, where state lives, why the stack looks like this.
 - **concept** — the idea underneath the code (what a webhook actually is, why a queue here, what that ORM hides), always anchored to where it shows up in this repo.
 
-Priority within an angle: never-quizzed topics first, then weak topics from the ledger (level 0–1, not asked recently), then escalation — a topic at level 2–3 gets a strictly harder question than last time.
+Priority:
+
+1. **Due retrievals.** A topic taught at level 0–1 on an earlier day is at peak forgetting — re-asking it now is worth more than any new question. A level 2 untouched for a week or more also qualifies. A gap only counts as closed when the user answers that topic at level 2+ on a later day; being taught the answer once proves nothing about whether it stuck.
+2. **Never-quizzed topics.**
+3. **Escalation.** A level-3 topic gets one strictly harder question; after two solid rounds in a row it retires — note `retired` in its row and stop selecting it (it stays in the ledger forever).
+
+Never the same topic twice in a row, even when it's due.
 
 ## 3. Ask the question
 
 - Exactly ONE question, open-ended. Never multiple choice, never yes/no.
 - Phrase it like a colleague, not an exam: "Quick one — when a request hits /api/orders, what happens before anything touches the database?"
 - Do NOT hint at the answer, enumerate options, or explain why you picked this topic.
+- A re-ask of a ledger topic must be freshly phrased or harder than last time, never the old question verbatim — recognizing a question is not retrieving the answer.
+- When escalating a topic the user already holds at level 2–3, ask *why* or *what breaks* ("why is this a Stop hook and not PostToolUse?", "what breaks if the cooldown file disappears?") — explanation and prediction keep teaching where plain recall plateaus.
 - Then END YOUR TURN and wait for the answer. Do not answer your own question.
 
 ## 4. Grade by teaching
@@ -76,7 +86,7 @@ Close by showing the user the exact row you recorded, in one line:
 Logged: <angle> · <topic> · level <n> (<label>) — <note>
 ```
 
-The user must always see their assessed level and the gap that was written down — that line is part of the feedback, not bookkeeping. Don't editorialize beyond it.
+The user must always see their assessed level and the gap that was written down — that line is part of the feedback, not bookkeeping. Two additions when they apply: if this was a re-ask and the level moved, show the trajectory — `level 2 (working), up from 1 on 2026-06-03` — closing a gap is the payoff and the user should see it happen. If the recorded level is 0–1, end the line with `(this one comes back)`; knowing a re-test is coming changes how the correction gets read. Don't editorialize beyond that.
 
 ### Ledger compaction
 
@@ -88,7 +98,7 @@ If the table has grown past ~40 rows, compact it before appending: collapse ever
 |-------|-------|-------|------------|---------------|
 ```
 
-Merge duplicate topics into their latest level and the one gap that still matters. Compaction summarizes, it never forgets: no topic's existence or level may be lost. Both the table and the consolidated section count as the ledger for topic selection in step 2.
+Merge duplicate topics into their latest level and the one gap that still matters. Compaction summarizes, it never forgets: no topic's existence, level, or retirement may be lost. Both the table and the consolidated section count as the ledger for topic selection in step 2.
 
 ## Rules
 
